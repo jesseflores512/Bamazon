@@ -38,12 +38,12 @@ function promptCustomerForItem() {
  inquirer.prompt([{
    type:'input',
    name:'idChoice',
-   message:'What is the product ID of the item you would like to purchase?'
+   message:'What is the item ID of the product you would like to purchase?'
  },
   {
     type:'input',
     name:'quantityChoice',
-    message:'What is the quantity of the item you would like to purchase?'
+    message:'How many would you like to purchase?'
   }]).then(function(input){
 
     var productId = input.idChoice;
@@ -55,11 +55,11 @@ function promptCustomerForItem() {
         productData = res[0];
         //determine if enough items are in stock
         if (productData.stock_quantity < quantity) {
-          console.log("Insufficient quantity in stock!");
+          console.log("Sorry not enough product in stock.");
           promptCustomerForItem();
         }
         else {
-          var updateQuantity = 'UPDATE products SET stock_quantity = ' + (productData.stock_quantity - quantity) + ' WHERE item_id = ' + item;
+          var updateQuantity = 'UPDATE products SET stock_quantity = ' + (productData.stock_quantity - quantity) + ' WHERE item_id = ' + productId;
 
           connection.query(updateQuantity, function(err, res) {
             if (err) throw err;
