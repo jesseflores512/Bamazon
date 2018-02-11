@@ -1,2 +1,2 @@
 # Bamazon
-Amazon-like storefront made with the MySQL 
+Storefront database app made with the Node.js and MySQL 
