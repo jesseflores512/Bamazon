@@ -2,7 +2,6 @@ var mysql   = require('mysql');
 var bodyParser = require("body-parser");
 var inquirer = require("inquirer");
 var cTable = require("console.table");
-var port = 3000;
 
 
 //creat connection
@@ -20,73 +19,58 @@ connection.connect(function(err) {
     console.error("error connecting: " + err.stack);
     return;
   }
-
+  loadProducts()
 });
 
 //load product table from db
 function loadProducts () {
   connection.query("SELECT * FROM products", function (err, res){
     if (err) throw err;
-    console.log("\n")
+    console.log("Welcome to Bamazon!\n")
     console.table(res)
-  })
 
+    promptCustomerForItem();
+  });
 }
 
 // get id from customer
-function promptCustomerForItem(inventory) {
+function promptCustomerForItem() {
  inquirer.prompt([{
    type:'input',
-   name:'choice',
+   name:'idChoice',
    message:'What is the product ID of the item you would like to purchase?'
- }]).then(function(val){
-   checkIfValueExist(val.quantity)
-   var choiceId = parseInt(val.choice);
+ },
+  {
+    type:'input',
+    name:'quantityChoice',
+    message:'What is the quantity of the item you would like to purchase?'
+  }]).then(function(input){
 
-   if (product){
-      // call quantity
-      promptCustomerForQuantity(product)
-   } else {
-//if not enough product show insuffient message
-      console.log("\n insuffient product inventory")
-      loadProducts()
-   }
+    var productId = input.idChoice;
+    var quantity = input.quantityChoice;
 
-    })
+    connection.query("SELECT * FROM products WHERE ?", {item_id: productId}, function(err, res){
+        if (err) throw err;
+
+        productData = res[0];
+        //determine if enough items are in stock
+        if (productData.stock_quantity < quantity) {
+          console.log("Insufficient quantity in stock!");
+          promptCustomerForItem();
+        }
+        else {
+          var updateQuantity = 'UPDATE products SET stock_quantity = ' + (productData.stock_quantity - quantity) + ' WHERE item_id = ' + item;
+
+          connection.query(updateQuantity, function(err, res) {
+            if (err) throw err;
+
+            console.log('Order placed! Your total is $' + productData.price * quantity);
+            console.log('Thank you for your purchase.');
+
+            connection.end();
+          })
+
+        }
+      })
+    });
   };
-  loadProducts()
-
-  promptCustomerForItem()
-
-
-//prompt customer for quantity
-  // function promptCustomerForQuantity(product) {
-  //
-  //  inquirer.prompt([{
-  //    type:'input',
-  //    name:'choice',
-  //    message:'What is the quantity of the item you would like to purchase? [Quit with Q]'
-  //    validate: function(val){
-  //      return val>0 || val.toLowerCase() == "q"
-  //    }
-  //  }]).then(function(val){
-  //
-  //    var choiceId = parseInt(val.choice);
-  //
-  //    if (product){
-  //
-  //    } else {
-  //
-  //       console.log("\n insuffient product inventory")
-  //       loadProducts()
-  //    }
-  //
-  //     })
-  //   };
-
-
-//check id quantity
-
-//if enough product update database
-
-//show customer the total cost of purchase
